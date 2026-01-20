@@ -1,138 +1,196 @@
-// Home page of the app.
-// Currently a demo placeholder "please wait" screen.
-// Replace this file with your actual app UI. Do not delete it to use some other file as homepage. Simply replace the entire contents of this file.
-
-import { useEffect, useMemo, useState } from 'react'
-import { Sparkles } from 'lucide-react'
-
-import { ThemeToggle } from '@/components/ThemeToggle'
-import { HAS_TEMPLATE_DEMO, TemplateDemo } from '@/components/TemplateDemo'
-import { Button } from '@/components/ui/button'
-import { Toaster, toast } from '@/components/ui/sonner'
-
-function formatDuration(ms: number): string {
-  const total = Math.max(0, Math.floor(ms / 1000))
-  const m = Math.floor(total / 60)
-  const s = total % 60
-  return `${m}:${s.toString().padStart(2, '0')}`
-}
-
+import {
+  personalInfo,
+  projects,
+  skills,
+} from "@/data";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { ArrowRight, Download, ExternalLink } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ContactForm } from "@/components/ContactForm";
+import { Badge } from "@/components/ui/badge";
+import { motion, Variants } from "framer-motion";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { SkillCard } from "@/components/SkillCard";
+const sectionVariants: Variants = {
+  hidden: { opacity: 0, y: 50 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.6,
+      ease: "easeOut",
+    },
+  },
+};
 export function HomePage() {
-  const [coins, setCoins] = useState(0)
-  const [isRunning, setIsRunning] = useState(false)
-  const [startedAt, setStartedAt] = useState<number | null>(null)
-  const [elapsedMs, setElapsedMs] = useState(0)
-
-  useEffect(() => {
-    if (!isRunning || startedAt === null) return
-
-    const t = setInterval(() => {
-      setElapsedMs(Date.now() - startedAt)
-    }, 250)
-
-    return () => clearInterval(t)
-  }, [isRunning, startedAt])
-
-  const formatted = useMemo(() => formatDuration(elapsedMs), [elapsedMs])
-
-  const onPleaseWait = () => {
-    setCoins((c) => c + 1)
-
-    if (!isRunning) {
-      // Resume from the current elapsed time
-      setStartedAt(Date.now() - elapsedMs)
-      setIsRunning(true)
-      toast.success('Building your app…', {
-        description: "Hang tight — we're setting everything up.",
-      })
-      return
-    }
-
-    setIsRunning(false)
-    toast.info('Still working…', {
-      description: 'You can come back in a moment.',
-    })
-  }
-
-  const onReset = () => {
-    setCoins(0)
-    setIsRunning(false)
-    setStartedAt(null)
-    setElapsedMs(0)
-    toast('Reset complete')
-  }
-
-  const onAddCoin = () => {
-    setCoins((c) => c + 1)
-    toast('Coin added')
-  }
-
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground p-4 overflow-hidden relative">
-      <ThemeToggle />
-      <div className="absolute inset-0 bg-gradient-rainbow opacity-10 dark:opacity-20 pointer-events-none" />
-
-      <div className="text-center space-y-8 relative z-10 animate-fade-in w-full">
-        <div className="flex justify-center">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-primary floating">
-            <Sparkles className="w-8 h-8 text-white rotating" />
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Hero Section */}
+      <motion.section
+        initial="hidden"
+        animate="visible"
+        variants={sectionVariants}
+        className="py-16 md:py-24 lg:py-32"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+          <div className="space-y-6 text-center md:text-left">
+            <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl font-display">
+              {personalInfo.name}
+            </h1>
+            <p className="text-lg text-muted-foreground">
+              {personalInfo.about}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+              <Button size="lg" asChild className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                <Link to="/contact">
+                  Contact Me <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+              <Button size="lg" variant="outline" asChild>
+                <a href="/resume.pdf" download>
+                  Download CV <Download className="ml-2 h-5 w-5" />
+                </a>
+              </Button>
+            </div>
+            <div className="flex justify-center md:justify-start space-x-4 pt-2">
+              {personalInfo.socials.map((social) => (
+                <a
+                  key={social.name}
+                  href={social.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <social.icon className="h-6 w-6" />
+                  <span className="sr-only">{social.name}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+          <div className="flex justify-center">
+            <motion.div
+              className="w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden border-4 border-primary/20 shadow-lg"
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <img
+                src={personalInfo.photoUrl}
+                alt={personalInfo.name}
+                className="w-full h-full object-cover"
+              />
+            </motion.div>
           </div>
         </div>
-
-        <div className="space-y-3">
-          <h1 className="text-5xl md:text-7xl font-display font-bold text-balance leading-tight">
-            Creating your <span className="text-gradient">app</span>
-          </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto text-pretty">
-            Your application would be ready soon.
+      </motion.section>
+      {/* Skills Section */}
+      <motion.section
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.3 }}
+        variants={sectionVariants}
+        className="py-16 md:py-24 lg:py-32"
+      >
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            My Skills
+          </h2>
+          <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
+            Technologies I'm proficient with.
           </p>
         </div>
-
-        {HAS_TEMPLATE_DEMO ? (
-          <div className="max-w-5xl mx-auto text-left">
-            <TemplateDemo />
-          </div>
-        ) : (
-          <>
-            <div className="flex justify-center gap-4">
-              <Button
-                size="lg"
-                onClick={onPleaseWait}
-                className="btn-gradient px-8 py-4 text-lg font-semibold hover:-translate-y-0.5 transition-all duration-200"
-                aria-live="polite"
-              >
-                Please Wait
-              </Button>
-            </div>
-
-            <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
-              <div>
-                Time elapsed:{' '}
-                <span className="font-medium tabular-nums text-foreground">{formatted}</span>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+          {skills.map((skill, index) => (
+            <SkillCard key={skill.name} skill={skill} index={index} />
+          ))}
+        </div>
+      </motion.section>
+      {/* Featured Projects Section */}
+      <motion.section
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+        variants={sectionVariants}
+        className="py-16 md:py-24 lg:py-32"
+      >
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            Featured Projects
+          </h2>
+          <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
+            A selection of projects I'm proud of.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {projects.slice(0, 2).map((project) => (
+            <Card key={project.title} className="h-full flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+              <AspectRatio ratio={16 / 9}>
+                <img
+                  src={project.imageUrl}
+                  alt={project.title}
+                  className="object-cover w-full h-full"
+                />
+              </AspectRatio>
+              <div className="p-6 flex flex-col flex-grow">
+                <CardTitle>{project.title}</CardTitle>
+                <CardDescription className="mt-2 flex-grow">{project.description}</CardDescription>
+                <div className="mt-4">
+                  <h4 className="font-semibold mb-2 text-sm text-foreground">Skills Used:</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {project.skillsUsed.map((skill) => (
+                      <Badge key={skill} variant="secondary">
+                        {skill}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                <Button asChild className="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white">
+                  <a href={project.websiteLink} target="_blank" rel="noopener noreferrer">
+                    Visit Website <ExternalLink className="ml-2 h-4 w-4" />
+                  </a>
+                </Button>
               </div>
-              <div>
-                Coins:{' '}
-                <span className="font-medium tabular-nums text-foreground">{coins}</span>
-              </div>
+            </Card>
+          ))}
+        </div>
+        <div className="text-center mt-12">
+          <Button asChild variant="outline">
+            <Link to="/projects">
+              View All Projects <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+      </motion.section>
+      {/* Contact Section */}
+      <motion.section
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+        variants={sectionVariants}
+        className="py-16 md:py-24 lg:py-32"
+      >
+        <Card>
+          <CardHeader className="text-center">
+            <CardTitle className="text-3xl font-bold tracking-tight sm:text-4xl">
+              Get in Touch
+            </CardTitle>
+            <CardDescription className="mt-4 max-w-2xl mx-auto text-lg">
+              Have a project in mind? I'd love to hear from you.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="max-w-xl mx-auto">
+              <ContactForm />
             </div>
-
-            <div className="flex justify-center gap-2">
-              <Button variant="outline" size="sm" onClick={onReset}>
-                Reset
-              </Button>
-              <Button variant="outline" size="sm" onClick={onAddCoin}>
-                Add Coin
-              </Button>
-            </div>
-          </>
-        )}
-      </div>
-
-      <footer className="absolute bottom-8 text-center text-muted-foreground/80">
-        <p>Powered by Cloudflare</p>
-      </footer>
-
-      <Toaster richColors closeButton />
+          </CardContent>
+        </Card>
+      </motion.section>
     </div>
-  )
+  );
 }
